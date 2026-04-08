@@ -88,7 +88,7 @@ const HOOK_TEMPLATES: &[TemplateFile] = &[
     },
 ];
 
-const CONFIGURE_PROMPT: &str = include_str!("../../lib/prompts/configure.md");
+const CONFIGURE_PROMPT: &str = include_str!("../prompts/configure.md");
 
 pub fn run_configure(dir: &Path, static_only: bool) -> Result<()> {
     let dir = if dir.is_relative() {
