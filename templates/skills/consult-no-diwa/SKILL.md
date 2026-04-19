@@ -1,4 +1,5 @@
 ---
+name: consult
 description: Consult the masters — review the entire codebase through the lens of great software engineers. Expensive, comprehensive audit meant to run occasionally.
 ---
 

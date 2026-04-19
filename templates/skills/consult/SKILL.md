@@ -1,4 +1,5 @@
 ---
+name: consult
 description: Consult the masters — review the entire codebase through the lens of great software engineers. Mines git history first via diwa, then runs deep agent review.
 ---
 

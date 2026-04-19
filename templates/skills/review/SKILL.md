@@ -1,4 +1,5 @@
 ---
+name: review
 description: Run a multi-perspective review on a pull request — security, architecture, correctness.
 ---
 

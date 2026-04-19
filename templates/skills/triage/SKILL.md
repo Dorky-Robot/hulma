@@ -1,4 +1,5 @@
 ---
+name: triage
 description: Deep triage — trace open issues to root causes, find eliminations, and propose structural PRs.
 ---
 

@@ -18,7 +18,11 @@ const CLAUDE_HOOK_TEMPLATES: &[TemplateFile] = &[TemplateFile {
     content: templates::HOOK_KATULONG_PUBSUB,
 }];
 
-/// All templates for the --static path (agents + commands only).
+/// All templates for the --static path (agents + skills only). Skills install
+/// to `.claude/skills/<name>/SKILL.md` — the modern Claude Code layout that
+/// gets picked up by the `/` autocomplete and the skill registry. The legacy
+/// `.claude/commands/*.md` location still works at runtime but is invisible
+/// to autocomplete, which is why we no longer write there.
 const TEMPLATES: &[TemplateFile] = &[
     TemplateFile {
         relative_path: "agents/security-reviewer.md",
@@ -49,30 +53,30 @@ const TEMPLATES: &[TemplateFile] = &[
         content: templates::AGENT_SIMPLICITY_ADVOCATE,
     },
     TemplateFile {
-        relative_path: "commands/dispatch.md",
-        content: templates::COMMAND_DISPATCH,
+        relative_path: "skills/dispatch/SKILL.md",
+        content: templates::SKILL_DISPATCH,
     },
     TemplateFile {
-        relative_path: "commands/review.md",
-        content: templates::COMMAND_REVIEW,
+        relative_path: "skills/review/SKILL.md",
+        content: templates::SKILL_REVIEW,
     },
     TemplateFile {
-        relative_path: "commands/triage.md",
-        content: templates::COMMAND_TRIAGE,
+        relative_path: "skills/triage/SKILL.md",
+        content: templates::SKILL_TRIAGE,
     },
     TemplateFile {
-        relative_path: "commands/ship-it.md",
-        content: templates::COMMAND_SHIP_IT,
+        relative_path: "skills/ship-it/SKILL.md",
+        content: templates::SKILL_SHIP_IT,
     },
     TemplateFile {
-        relative_path: "commands/work.md",
-        content: templates::COMMAND_WORK,
+        relative_path: "skills/work/SKILL.md",
+        content: templates::SKILL_WORK,
     },
-    // commands/consult.md is installed separately by install_consult()
+    // skills/consult/SKILL.md is installed separately by install_consult()
     // because the variant depends on whether `diwa` is available on PATH.
     TemplateFile {
-        relative_path: "commands/release.md",
-        content: templates::COMMAND_RELEASE,
+        relative_path: "skills/release/SKILL.md",
+        content: templates::SKILL_RELEASE,
     },
 ];
 
@@ -109,8 +113,10 @@ pub fn run_configure(dir: &Path, static_only: bool) -> Result<()> {
     let claude_dir = dir.join(".claude");
     let husky_dir = dir.join(".husky");
 
-    // Create directory structure.
-    for subdir in &["agents", "commands", "hooks"] {
+    // Create directory structure. Each skill needs its own subdirectory under
+    // .claude/skills/ — `install_templates` does that lazily by creating
+    // parent dirs from each template's relative_path.
+    for subdir in &["agents", "skills", "hooks"] {
         fs::create_dir_all(claude_dir.join(subdir))?;
     }
     fs::create_dir_all(&husky_dir)?;
@@ -157,15 +163,15 @@ fn diwa_available() -> bool {
 
 /// Build the system prompt for the generative configure session.
 /// Replaces placeholder tokens in the template with reference template content.
-/// The `{COMMAND_CONSULT}` reference matches whichever variant would be
+/// The `{SKILL_CONSULT}` reference matches whichever variant would be
 /// installed by the static path: diwa-aware if `diwa` is on PATH, otherwise
 /// the base variant. This keeps the generative output consistent with what
 /// `--static` would produce on the same machine.
 pub(crate) fn build_configure_prompt() -> String {
     let consult_template = if diwa_available() {
-        templates::COMMAND_CONSULT
+        templates::SKILL_CONSULT
     } else {
-        templates::COMMAND_CONSULT_NO_DIWA
+        templates::SKILL_CONSULT_NO_DIWA
     };
     CONFIGURE_PROMPT
         .replace(
@@ -190,13 +196,13 @@ pub(crate) fn build_configure_prompt() -> String {
             "{AGENT_SIMPLICITY_ADVOCATE}",
             templates::AGENT_SIMPLICITY_ADVOCATE,
         )
-        .replace("{COMMAND_DISPATCH}", templates::COMMAND_DISPATCH)
-        .replace("{COMMAND_REVIEW}", templates::COMMAND_REVIEW)
-        .replace("{COMMAND_TRIAGE}", templates::COMMAND_TRIAGE)
-        .replace("{COMMAND_SHIP_IT}", templates::COMMAND_SHIP_IT)
-        .replace("{COMMAND_WORK}", templates::COMMAND_WORK)
-        .replace("{COMMAND_CONSULT}", consult_template)
-        .replace("{COMMAND_RELEASE}", templates::COMMAND_RELEASE)
+        .replace("{SKILL_DISPATCH}", templates::SKILL_DISPATCH)
+        .replace("{SKILL_REVIEW}", templates::SKILL_REVIEW)
+        .replace("{SKILL_TRIAGE}", templates::SKILL_TRIAGE)
+        .replace("{SKILL_SHIP_IT}", templates::SKILL_SHIP_IT)
+        .replace("{SKILL_WORK}", templates::SKILL_WORK)
+        .replace("{SKILL_CONSULT}", consult_template)
+        .replace("{SKILL_RELEASE}", templates::SKILL_RELEASE)
         .replace("{HOOK_PRE_COMMIT}", templates::GIT_HOOK_PRE_COMMIT)
         .replace("{HOOK_PRE_PUSH}", templates::GIT_HOOK_PRE_PUSH)
 }
@@ -304,20 +310,20 @@ fn install_static_templates(claude_dir: &Path, husky_dir: &Path) -> Result<()> {
     let settings_installed = install_settings(claude_dir)?;
     let hooks_installed = install_static_hooks(husky_dir)?;
 
-    // Categorize for summary. consult.md is installed separately by
-    // install_consult() but counts as a command.
+    // Categorize for summary. consult is installed separately by
+    // install_consult() but counts as a skill.
     let agents = TEMPLATES
         .iter()
         .filter(|t| t.relative_path.starts_with("agents/"))
         .count();
-    let commands = TEMPLATES
+    let skills = TEMPLATES
         .iter()
-        .filter(|t| t.relative_path.starts_with("commands/"))
+        .filter(|t| t.relative_path.starts_with("skills/"))
         .count()
         + 1;
     let total = installed + 1;
 
-    println!("\nInstalled {total} files ({agents} agents, {commands} commands) to .claude/");
+    println!("\nInstalled {total} files ({agents} agents, {skills} skills) to .claude/");
     println!("Installed {claude_hooks_installed} Claude Code hooks to .claude/hooks/");
     if settings_installed {
         println!("Installed settings.local.json to .claude/");
@@ -328,18 +334,19 @@ fn install_static_templates(claude_dir: &Path, husky_dir: &Path) -> Result<()> {
     Ok(())
 }
 
-/// Install commands/consult.md, picking the diwa-aware variant if `diwa`
+/// Install skills/consult/SKILL.md, picking the diwa-aware variant if `diwa`
 /// is on PATH and the base variant otherwise. The diwa-aware variant adds
 /// a Phase 0 that mines git history (via the `diwa` skill) before the
 /// review agents run, so they can avoid recommending approaches that
 /// were already tried and reverted.
 fn install_consult(claude_dir: &Path) -> Result<()> {
-    let dest = claude_dir.join("commands/consult.md");
+    let dest = claude_dir.join("skills/consult/SKILL.md");
+    fs::create_dir_all(dest.parent().unwrap())?;
     let with_diwa = diwa_available();
     let content = if with_diwa {
-        templates::COMMAND_CONSULT
+        templates::SKILL_CONSULT
     } else {
-        templates::COMMAND_CONSULT_NO_DIWA
+        templates::SKILL_CONSULT_NO_DIWA
     };
     let action = if dest.exists() { "overwrite" } else { "create" };
     fs::write(&dest, content)?;
@@ -348,7 +355,7 @@ fn install_consult(claude_dir: &Path) -> Result<()> {
     } else {
         " (base variant — diwa not on PATH)"
     };
-    println!("  {action}: .claude/commands/consult.md{suffix}");
+    println!("  {action}: .claude/skills/consult/SKILL.md{suffix}");
     Ok(())
 }
 
@@ -394,6 +401,12 @@ fn install_templates(
     for template in templates {
         let dest = base_dir.join(template.relative_path);
 
+        // Skills nest one directory deep (skills/<name>/SKILL.md), so make
+        // sure the parent exists before writing.
+        if let Some(parent) = dest.parent() {
+            fs::create_dir_all(parent)?;
+        }
+
         let action = if dest.exists() { "overwrite" } else { "create" };
 
         fs::write(&dest, template.content)?;
@@ -416,8 +429,8 @@ mod tests {
             "prompt should not contain unreplaced {{AGENT_*}} placeholders"
         );
         assert!(
-            !prompt.contains("{COMMAND_"),
-            "prompt should not contain unreplaced {{COMMAND_*}} placeholders"
+            !prompt.contains("{SKILL_"),
+            "prompt should not contain unreplaced {{SKILL_*}} placeholders"
         );
         assert!(
             !prompt.contains("{HOOK_"),
@@ -500,36 +513,39 @@ mod tests {
         assert_eq!(truncate_utf8(s, 2000), "hello");
     }
 
-    /// Regression guard: every command template must start with YAML
-    /// frontmatter containing a `description:` field. Claude Code's
-    /// command picker reads this to render the autocomplete menu — without
-    /// it, the slash command is invisible to users even though invoking
-    /// `/<name>` directly still works.
+    /// Regression guard: every skill template must start with YAML frontmatter
+    /// containing both `name:` and `description:` fields. Claude Code's `/`
+    /// autocomplete and skill registry both read these fields — a SKILL.md
+    /// missing either is invisible in the command picker.
     #[test]
-    fn every_command_template_has_description_frontmatter() {
-        let commands = [
-            ("dispatch", templates::COMMAND_DISPATCH),
-            ("review", templates::COMMAND_REVIEW),
-            ("triage", templates::COMMAND_TRIAGE),
-            ("ship-it", templates::COMMAND_SHIP_IT),
-            ("work", templates::COMMAND_WORK),
-            ("consult", templates::COMMAND_CONSULT),
-            ("consult-no-diwa", templates::COMMAND_CONSULT_NO_DIWA),
-            ("release", templates::COMMAND_RELEASE),
+    fn every_skill_template_has_required_frontmatter() {
+        let skills = [
+            ("dispatch", templates::SKILL_DISPATCH),
+            ("review", templates::SKILL_REVIEW),
+            ("triage", templates::SKILL_TRIAGE),
+            ("ship-it", templates::SKILL_SHIP_IT),
+            ("work", templates::SKILL_WORK),
+            ("consult", templates::SKILL_CONSULT),
+            ("consult-no-diwa", templates::SKILL_CONSULT_NO_DIWA),
+            ("release", templates::SKILL_RELEASE),
         ];
-        for (name, body) in commands {
+        for (name, body) in skills {
             assert!(
                 body.starts_with("---\n"),
-                "command template {name}.md must start with YAML frontmatter (---\\n...)"
+                "skill template {name}/SKILL.md must start with YAML frontmatter (---\\n...)"
             );
             let after = &body[4..];
-            let end = after
-                .find("\n---\n")
-                .unwrap_or_else(|| panic!("command template {name}.md frontmatter never closes"));
+            let end = after.find("\n---\n").unwrap_or_else(|| {
+                panic!("skill template {name}/SKILL.md frontmatter never closes")
+            });
             let block = &after[..end];
             assert!(
+                block.lines().any(|l| l.starts_with("name:")),
+                "skill template {name}/SKILL.md frontmatter must include a `name:` field"
+            );
+            assert!(
                 block.lines().any(|l| l.starts_with("description:")),
-                "command template {name}.md frontmatter must include a `description:` field"
+                "skill template {name}/SKILL.md frontmatter must include a `description:` field"
             );
         }
     }

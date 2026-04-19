@@ -1,4 +1,5 @@
 ---
+name: work
 description: Dispatch multiple PRs to isolated Docker workers in parallel, respecting back-pressure limits.
 ---
 

@@ -3,15 +3,15 @@ structure has been created.
 
 ## Goal
 
-Create project-specific **agents**, **commands**, and **git hooks** for this
+Create project-specific **agents**, **skills**, and **git hooks** for this
 project in the current working directory. Agents are specialized reviewers that
-understand this project's domain. Commands are slash-command workflows (like
+understand this project's domain. Skills are slash-command workflows (like
 `/review`, `/test`) that invoke those agents. Git hooks enforce quality gates
 (secrets, formatting, linting, tests) before commits and pushes. Together they
 give Claude Code project-aware tooling.
 
-Because Claude Code also has global commands, every project command description
-MUST include the project name so users can distinguish project-specific commands
+Because Claude Code also has global skills, every project skill description
+MUST include the project name so users can distinguish project-specific skills
 from global ones. For example: "Run tests for MyApp" not just "Run tests".
 
 CRITICAL: You will receive a "Project context" section in the initial message
@@ -41,31 +41,36 @@ stacks, or domain concepts that are not present in the discovered context.
    - Use the reference agents below for format and spirit, not as copy targets
    - Every agent description must reference technologies ACTUALLY found in step 2
 
-4. Generate customized commands (`.claude/commands/*.md`):
-   - 3-5 slash commands that drive the agents you created in step 3
-   - Every project MUST have a `/ship-it` command — the commit→PR→review→merge
-     workflow that invokes your review agents. This is the most important command.
-   - Every project MUST have a `/consult` command — the multi-perspective
-     consultation workflow. Use the reference command below as a starting point
+4. Generate customized skills (`.claude/skills/<name>/SKILL.md`):
+   - Each skill lives in its own directory: `.claude/skills/ship-it/SKILL.md`,
+     `.claude/skills/dispatch/SKILL.md`, etc. The directory name becomes the
+     `/slash-command` name. Do NOT write to `.claude/commands/` — that path
+     still works at runtime but is invisible to the `/` autocomplete menu.
+   - 3-5 skills that drive the agents you created in step 3
+   - Every project MUST have a `/ship-it` skill — the commit→PR→review→merge
+     workflow that invokes your review agents. This is the most important skill.
+   - Every project MUST have a `/consult` skill — the multi-perspective
+     consultation workflow. Use the reference skill below as a starting point
      and customize the perspectives for this project's domain.
-   - Every command file MUST start with YAML frontmatter (`---` block) containing
-     a `description:` field — without this, the slash command will not appear in
-     Claude Code's autocomplete menu. Example:
+   - Every SKILL.md MUST start with YAML frontmatter (`---` block) containing
+     BOTH `name:` and `description:` fields — without these, Claude Code will
+     not register the skill or surface it in the autocomplete menu. Example:
 
          ---
+         name: ship-it
          description: Commit, push, create a PR, run review agents, and merge for MyApp.
          ---
 
-         <command body...>
+         <skill body...>
 
    - The `description` MUST include the project name so users can distinguish
-     project-specific commands from global ones (e.g., "Review a pull request
+     project-specific skills from global ones (e.g., "Review a pull request
      for CoolBeans." not "Review a pull request.")
    - Think about what review, deployment, triage, or testing workflows
      matter for THIS project based on what you found in step 2
-   - Commands should invoke the agents by name (e.g., launch a Task with
+   - Skills should invoke the agents by name (e.g., launch a Task with
      `subagent_type: "security-reviewer"`) so the agents actually get used
-   - Use the reference commands below for format and spirit
+   - Use the reference skills below for format and spirit
 
 5. Generate git hooks (`.husky/pre-commit` and `.husky/pre-push`):
    - Start from the reference hooks below and customize for this project
@@ -128,26 +133,26 @@ Every agent file needs YAML frontmatter:
 ### Reference agent: simplicity-advocate
 {AGENT_SIMPLICITY_ADVOCATE}
 
-### Reference command: dispatch
-{COMMAND_DISPATCH}
+### Reference skill: dispatch
+{SKILL_DISPATCH}
 
-### Reference command: review
-{COMMAND_REVIEW}
+### Reference skill: review
+{SKILL_REVIEW}
 
-### Reference command: triage
-{COMMAND_TRIAGE}
+### Reference skill: triage
+{SKILL_TRIAGE}
 
-### Reference command: ship-it
-{COMMAND_SHIP_IT}
+### Reference skill: ship-it
+{SKILL_SHIP_IT}
 
-### Reference command: work
-{COMMAND_WORK}
+### Reference skill: work
+{SKILL_WORK}
 
-### Reference command: consult
-{COMMAND_CONSULT}
+### Reference skill: consult
+{SKILL_CONSULT}
 
-### Reference command: release
-{COMMAND_RELEASE}
+### Reference skill: release
+{SKILL_RELEASE}
 
 ### Reference git hook: pre-commit
 {HOOK_PRE_COMMIT}

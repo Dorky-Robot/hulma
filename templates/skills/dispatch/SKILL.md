@@ -1,4 +1,5 @@
 ---
+name: dispatch
 description: Create a well-scoped PR and dispatch it to an isolated Docker worker for implementation.
 ---
 

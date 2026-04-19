@@ -1,6 +1,8 @@
 # hulma
 
-hulma is a project-aware Claude Code scaffolder. `hulma configure` inspects a project and writes review agents, slash commands, and hook templates to its `.claude/` directory.
+hulma is a project-aware Claude Code scaffolder. `hulma configure` inspects a project and writes review agents, skills (slash commands), and hook templates to its `.claude/` directory.
+
+Claude Code discovers skills as `.claude/skills/<name>/SKILL.md` directories. Each SKILL.md must start with YAML frontmatter containing both `name:` and `description:`. The legacy `.claude/commands/*.md` layout still runs at invocation time but is invisible to the autocomplete menu, so hulma writes the directory layout exclusively.
 
 ## Architecture
 
@@ -9,7 +11,7 @@ hulma is a project-aware Claude Code scaffolder. `hulma configure` inspects a pr
 - `src/configure_project.rs` — `run_configure()`, project discovery, prompt builder, template installer
 - `src/templates.rs` — `include_str!` constants for embedded template files
 - `templates/agents/*.md` — review-agent reference templates (security, architecture, correctness, simplicity, root-cause, backlog, issue analyst)
-- `templates/commands/*.md` — slash-command reference templates (dispatch, review, triage, ship-it, work, consult, consult-no-diwa, release)
+- `templates/skills/<name>/SKILL.md` — skill (slash-command) reference templates (dispatch, review, triage, ship-it, work, consult, consult-no-diwa, release)
 - `templates/git-hooks/{pre-commit,pre-push}` — husky-style git hook templates
 - `templates/hooks/{katulong-pubsub.sh,safety-gate.sh,safety-gate.toml,README.md}` — Claude Code hook templates
 - `templates/settings.local.json` — `.claude/settings.local.json` reference
@@ -35,13 +37,13 @@ cargo test                # run all tests (including the placeholder test that c
 cargo install --path .    # install hulma to ~/.cargo/bin
 ```
 
-The placeholder test (`build_configure_prompt_replaces_all_placeholders`) is the canary for template-surface drift: if you add a new `{COMMAND_*}` or `{AGENT_*}` token to `prompts/configure.md` without wiring up a corresponding `replace()` call in `build_configure_prompt()`, this test fails.
+The placeholder test (`build_configure_prompt_replaces_all_placeholders`) is the canary for template-surface drift: if you add a new `{SKILL_*}` or `{AGENT_*}` token to `prompts/configure.md` without wiring up a corresponding `replace()` call in `build_configure_prompt()`, this test fails.
 
 ## Adding a template
 
-1. Drop the file under `templates/agents/`, `templates/commands/`, or `templates/hooks/`.
+1. Drop the file under `templates/agents/`, `templates/skills/<name>/SKILL.md`, or `templates/hooks/`.
 2. Add a `pub const X: &str = include_str!("../templates/...")` constant in `src/templates.rs`.
-3. Add a `TemplateFile` entry to the appropriate table in `src/configure_project.rs` (`TEMPLATES`, `CLAUDE_HOOK_TEMPLATES`, `HOOK_TEMPLATES`).
+3. Add a `TemplateFile` entry to the appropriate table in `src/configure_project.rs` (`TEMPLATES`, `CLAUDE_HOOK_TEMPLATES`, `HOOK_TEMPLATES`). For skills, the `relative_path` must be `skills/<name>/SKILL.md` so it matches Claude Code's discovery layout.
 4. If the template should be referenced in the generative prompt, add a `{X}` placeholder to `prompts/configure.md` and a `.replace("{X}", templates::X)` call in `build_configure_prompt()`.
 5. Run `cargo test` — the placeholder test will catch any missed wiring.
 

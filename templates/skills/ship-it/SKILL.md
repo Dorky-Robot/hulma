@@ -1,4 +1,5 @@
 ---
+name: ship-it
 description: Commit, push, create a PR, run review agents, fix issues, and merge.
 ---
 

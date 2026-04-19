@@ -1,4 +1,5 @@
 ---
+name: release
 description: Cut a new release — bump version, tag, push, monitor CI, and report results.
 ---
 

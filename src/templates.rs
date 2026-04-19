@@ -15,16 +15,18 @@ pub const AGENT_ROOT_CAUSE_ANALYST: &str =
 pub const AGENT_SIMPLICITY_ADVOCATE: &str =
     include_str!("../templates/agents/simplicity-advocate.md");
 
-// Commands
-pub const COMMAND_DISPATCH: &str = include_str!("../templates/commands/dispatch.md");
-pub const COMMAND_REVIEW: &str = include_str!("../templates/commands/review.md");
-pub const COMMAND_TRIAGE: &str = include_str!("../templates/commands/triage.md");
-pub const COMMAND_SHIP_IT: &str = include_str!("../templates/commands/ship-it.md");
-pub const COMMAND_WORK: &str = include_str!("../templates/commands/work.md");
-pub const COMMAND_CONSULT: &str = include_str!("../templates/commands/consult.md");
-pub const COMMAND_CONSULT_NO_DIWA: &str =
-    include_str!("../templates/commands/consult-no-diwa.md");
-pub const COMMAND_RELEASE: &str = include_str!("../templates/commands/release.md");
+// Skills (formerly "commands" — Claude Code merged commands into skills, where
+// each lives in its own directory with a SKILL.md entrypoint. Constant names
+// keep the SKILL_ prefix to stay aligned with the new terminology.)
+pub const SKILL_DISPATCH: &str = include_str!("../templates/skills/dispatch/SKILL.md");
+pub const SKILL_REVIEW: &str = include_str!("../templates/skills/review/SKILL.md");
+pub const SKILL_TRIAGE: &str = include_str!("../templates/skills/triage/SKILL.md");
+pub const SKILL_SHIP_IT: &str = include_str!("../templates/skills/ship-it/SKILL.md");
+pub const SKILL_WORK: &str = include_str!("../templates/skills/work/SKILL.md");
+pub const SKILL_CONSULT: &str = include_str!("../templates/skills/consult/SKILL.md");
+pub const SKILL_CONSULT_NO_DIWA: &str =
+    include_str!("../templates/skills/consult-no-diwa/SKILL.md");
+pub const SKILL_RELEASE: &str = include_str!("../templates/skills/release/SKILL.md");
 
 // Git hooks
 pub const GIT_HOOK_PRE_COMMIT: &str = include_str!("../templates/git-hooks/pre-commit");
