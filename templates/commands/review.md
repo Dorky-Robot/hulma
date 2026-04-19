@@ -1,3 +1,7 @@
+---
+description: Run a multi-perspective review on a pull request — security, architecture, correctness.
+---
+
 Run a multi-perspective review on a pull request.
 
 ## Step 1: Fetch the PR diff

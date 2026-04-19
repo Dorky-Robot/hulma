@@ -1,3 +1,7 @@
+---
+description: Consult the masters — review the entire codebase through the lens of great software engineers. Mines git history first via diwa, then runs deep agent review.
+---
+
 Consult the masters — review the entire codebase through the lens of great software engineers. This is an expensive, comprehensive audit meant to be run occasionally, not on every change.
 
 ## Phase 0: Mine the History with diwa

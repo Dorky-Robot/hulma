@@ -500,6 +500,40 @@ mod tests {
         assert_eq!(truncate_utf8(s, 2000), "hello");
     }
 
+    /// Regression guard: every command template must start with YAML
+    /// frontmatter containing a `description:` field. Claude Code's
+    /// command picker reads this to render the autocomplete menu — without
+    /// it, the slash command is invisible to users even though invoking
+    /// `/<name>` directly still works.
+    #[test]
+    fn every_command_template_has_description_frontmatter() {
+        let commands = [
+            ("dispatch", templates::COMMAND_DISPATCH),
+            ("review", templates::COMMAND_REVIEW),
+            ("triage", templates::COMMAND_TRIAGE),
+            ("ship-it", templates::COMMAND_SHIP_IT),
+            ("work", templates::COMMAND_WORK),
+            ("consult", templates::COMMAND_CONSULT),
+            ("consult-no-diwa", templates::COMMAND_CONSULT_NO_DIWA),
+            ("release", templates::COMMAND_RELEASE),
+        ];
+        for (name, body) in commands {
+            assert!(
+                body.starts_with("---\n"),
+                "command template {name}.md must start with YAML frontmatter (---\\n...)"
+            );
+            let after = &body[4..];
+            let end = after
+                .find("\n---\n")
+                .unwrap_or_else(|| panic!("command template {name}.md frontmatter never closes"));
+            let block = &after[..end];
+            assert!(
+                block.lines().any(|l| l.starts_with("description:")),
+                "command template {name}.md frontmatter must include a `description:` field"
+            );
+        }
+    }
+
     #[test]
     fn discover_project_truncates_large_config() {
         let dir = tempfile::TempDir::new().unwrap();

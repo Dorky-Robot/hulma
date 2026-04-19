@@ -1,3 +1,7 @@
+---
+description: Deep triage — trace open issues to root causes, find eliminations, and propose structural PRs.
+---
+
 Deep triage: trace open issues to root causes, find eliminations, and propose structural PRs.
 
 ## Step 1: Identify the repository

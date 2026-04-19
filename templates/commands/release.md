@@ -1,3 +1,7 @@
+---
+description: Cut a new release — bump version, tag, push, monitor CI, and report results.
+---
+
 Cut a new release — bump version, tag, push, monitor CI, and report results.
 
 ## Step 1: Pre-flight checks

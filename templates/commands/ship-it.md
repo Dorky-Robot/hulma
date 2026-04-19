@@ -1,3 +1,7 @@
+---
+description: Commit, push, create a PR, run review agents, fix issues, and merge.
+---
+
 Commit, push, create a PR, run review agents, fix issues, and merge.
 
 ## Step 1: Prepare the branch

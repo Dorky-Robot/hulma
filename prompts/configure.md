@@ -48,9 +48,19 @@ stacks, or domain concepts that are not present in the discovered context.
    - Every project MUST have a `/consult` command — the multi-perspective
      consultation workflow. Use the reference command below as a starting point
      and customize the perspectives for this project's domain.
-   - The first line of each command file is the description shown in the
-     command picker — it MUST include the project name (e.g.,
-     "Review a pull request for CoolBeans." not "Review a pull request.")
+   - Every command file MUST start with YAML frontmatter (`---` block) containing
+     a `description:` field — without this, the slash command will not appear in
+     Claude Code's autocomplete menu. Example:
+
+         ---
+         description: Commit, push, create a PR, run review agents, and merge for MyApp.
+         ---
+
+         <command body...>
+
+   - The `description` MUST include the project name so users can distinguish
+     project-specific commands from global ones (e.g., "Review a pull request
+     for CoolBeans." not "Review a pull request.")
    - Think about what review, deployment, triage, or testing workflows
      matter for THIS project based on what you found in step 2
    - Commands should invoke the agents by name (e.g., launch a Task with

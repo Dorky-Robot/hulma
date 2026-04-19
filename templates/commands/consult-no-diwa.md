@@ -1,3 +1,7 @@
+---
+description: Consult the masters — review the entire codebase through the lens of great software engineers. Expensive, comprehensive audit meant to run occasionally.
+---
+
 Consult the masters — review the entire codebase through the lens of great software engineers. This is an expensive, comprehensive audit meant to be run occasionally, not on every change.
 
 ## Phase 1: Map the Codebase

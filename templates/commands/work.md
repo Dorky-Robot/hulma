@@ -1,3 +1,7 @@
+---
+description: Dispatch multiple PRs to isolated Docker workers in parallel, respecting back-pressure limits.
+---
+
 Dispatch multiple PRs to isolated Docker workers in parallel, respecting back-pressure limits.
 
 ## Overview
