@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh secret *)",
+      "Bash(grep -E 'repository:|secrets\\\\.|homebrew' __TRACKED_VAR__/.github/workflows/release.yml)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(git fetch *)",
+      "Bash(gh release *)",
+      "Bash(git rebase *)",
+      "Bash(cargo build *)",
+      "Bash(git tag *)",
+      "Bash(gh run *)",
+      "Bash(gh api *)",
+      "Bash(brew update *)",
+      "Bash(brew install *)",
+      "Bash(hulma --version)",
+      "Bash(hulma --help)",
+      "Bash(xargs -I{} basename {})",
+      "Bash(gh pr create --title 'chore: init hulma scaffolding' --body ' *)"
+    ]
+  }
+}
